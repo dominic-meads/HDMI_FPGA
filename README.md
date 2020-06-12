@@ -1,2 +1,4 @@
 # HDMI_FPGA
-HDMI with Verilog and an FPGA. 
+Gonna try and make HDMI stuff with Verilog and an FPGA. Wish me luck, I'm gonna need it :) 
+
+First thing: work on 8b/10b encoding (I'm gonna code the transmitter first).
