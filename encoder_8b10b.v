@@ -15,7 +15,18 @@
 //
 /////////////////////////////////////////////////////////////////////////////////////////
 
-// TODO: OR DOT change? 
+/* NOTE: In the IBM article, the little arrows on the inputs of the gates are inverters. 
+		 This makes a regular AND gate (denoted "A") in paper, turn into a negative-AND,
+		 which hase the logic function of NOR. There are two outputs (one is inverted). 
+		 Therefore the outputs of gate "A" in the article are (from top to bottom): 
+		 NOR and OR (~NOR). 
+		 
+		 Also important is the "OR DOT" gate. I posted a question on a forum about this:
+		 https://www.eevblog.com/forum/projects/what-is-this-gate-in-this-8b10b-article/
+		 I found that this has to do with the ECL chips the authors used to realize their
+		 design. The logic function of OR DOT is true only when both inputs are equal, and 
+		 therefore has a truth table identical to an XNOR gate. */ 
+
 module encoder_8b10b(
 	input A,B,C,D,E,F,G,H,		// 8 bit data inputs 
 	input K,                	// control input, active HIGH for control, LOW for data
@@ -30,8 +41,9 @@ module encoder_8b10b(
 	   4). 5b/6b encoding switch (shown in Fig. 7)
 	   5). 3b/4b encoding switch (shown in Fig. 8) */
 
-	// 5b function datatypes 
-	wire not_A_nequal_B, not_C_nequal_D, L40, L04, L13, L31, L22; // output wires of Fig. 3 from top to bottom
+	// 5b function datatypes -- ex. n_A_a_B = ~(A & B)
+	wire n_A_nequal_B, n_nA_a_nB, n_A_a_B, n_C_nequal_D, n_nC_a_nD, n_C_a_D;  // intermediate wires of Fig. 3 from top to bottom
+	wire L40, L04, L13, L31, L22; // output wires of Fig. 3 from top to bottom
 	
 	// 3b function datatypes
 	reg F4,G4,H4,K4,notS = 0;  // clocked registers
@@ -42,15 +54,25 @@ module encoder_8b10b(
 	wire notNDL6, notPDL6, COMPLS4, COMPLS6;  // output wires of Fig. 6 from top to bottom (I'm not sure what the dotted line PDL4 represents)
 	reg r1, r2 = 0;  // clocked registers seen in Fig. 6. r1 is closest to top of page
 	
-	// 5b function 
-	assign not_A_nequal_B = (A & B) | (~A & ~B);
-	assign not_C_nequal_D = (C & D) | (~C & ~D);
-	assign L40 = ~(A & B) & ~(C & D);
-	assign L04 = ~(~A & ~B) & ~(~C & ~D);
-	assign L13 = (not_A_nequal_B & ~(~C & ~D)) | (not_C_nequal_D & ~(~A & ~B));
-	assign L31 = (not_A_nequal_B & ~(C & D)) | (not_C_nequal_D & ~(A & B));
-	assign L22 = (~(A & B) & ~(~C & ~D)) | (~(C & D) & ~(~A & ~B)) | (not_A_nequal_B & not_C_nequal_D);
+	
+	// 5b function
+		// intermediate wires
+	assign n_A_nequal_B = ~(A ^ B);  // XNOR: see note at beginning of module
+	assign n_nA_a_nB = ~(~A & ~B);
+	assign n_A_a_B = ~(A & B);
+	assign n_C_nequal_D = ~(C ^ D);
+	assign n_nC_a_nD = ~(~C & ~D);
+	assign n_C_a_D = ~(C & D);
+		// end intermediate wires
+		// output wires: "L" means logic function, Lxn = Logic function with "x" ones and "n" zeros (maintain disparity of +2, -2, or 0)
+	assign L40 = ~((n_A_a_B) | (n_C_a_D));  // NOR: see note at beginning of module
+	assign L04 = ~((n_nA_a_nB) | (n_nC_a_nD));
+	assign L13 = ~((n_A_nequal_B) | (n_nC_a_nD)) | ~((n_C_nequal_D) | (n_nA_a_nB));  // two NOR gate equivalents ORed
+	assign L31 = ~((n_A_nequal_B) | (n_C_a_D)) | ~((n_C_nequal_D) | (n_A_a_B));
+	assign L22 = ~((n_A_a_B) | (n_nC_a_nD)) | ~((n_C_a_D) | (n_nA_a_nB)) | ~((n_A_nequal_B) | (n_C_nequal_D)); 
+		// end output wires
 	// end 5b function
+	
 	
 	// 3b function 
 	always @ (negedge SBYTECLK)  // the article says "posedge of ~SBYTECLK," but that is equivalent to the negedge of SBYTECLK
@@ -71,6 +93,7 @@ module encoder_8b10b(
 	assign F_nequal_G_a_notH = H4 & (notF_a_notG | F_a_G);
 	assign F_a_G_a_H = ~H4 & ~(~F4 & ~G4);
 	// end 3b function
+	
 	
 	// Disparity control 
 		// start Fig. 5
@@ -96,5 +119,6 @@ module encoder_8b10b(
 		r2 <= (~r1 & PD0S4 & ND0S4) | (ND0S4 & COMPLS4) | (COMPLS4 & ~PD0S4);
 		// end Fig. 6
 	// end Disparity control 	
+
 
 endmodule 
