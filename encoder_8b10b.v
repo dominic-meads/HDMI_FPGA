@@ -66,9 +66,14 @@ module encoder_8b10b(
 	
 	// Disparity control datatypes
 	reg r1 = 0;  // clocked registers seen in Fig. 6. r1 is closest to top of page (MUST INITIALIZE TO 0 TO AVOID UNKOWN CONDITIONS)
-	reg r2 = 0; 
+	reg r2 = 0;
+		// I turned these net few signals from wires to registers to combat unkown conditions upon initialization
+	reg nNDL6 = 0;  // output registers of Fig. 6 from top to bottom (I'm not sure what the dotted line PDL4 (fig. 6) represents
+	reg nPDL6 = 1;  // ~nNDL6 (fig. 6)
+	reg COMPLS4 = 0;
+	reg COMPLS6 = 0;
 	wire PD_1S6, ND0S6, ND_1S6, PD0S6, ND_1S4, ND0S4, PD_1S4, PD0S4;  // output wires of Fig. 5 from top to bottom
-	wire nNDL6, nPDL6, COMPLS4, COMPLS6;  // output wires of Fig. 6 from top to bottom (I'm not sure what the dotted line PDL4 represents) 
+	   
 	
 	// 5b/6b encoding (7 = Fig. 7)
 	reg na,nb,nc,nd,ne,ni;  // complimented encoded outputs
@@ -140,11 +145,14 @@ module encoder_8b10b(
 	assign PD0S4 = F_a_G_a_H;
 		// end Fig. 5
 		// Fig. 6
-	assign nNDL6 = ~(~PD0S6 | COMPLS6) | (COMPLS6 & ND0S6) | ~(ND0S6 | PD0S6 | ~r2);
-	assign nPDL6 = ~nNDL6;
-	assign COMPLS4 = (ND_1S4 & r1) | (~r1 & PD_1S4);
-	assign COMPLS6 = (ND_1S6 & r2) | (~r2 & PD_1S6);
-
+	always @ (*) 
+		begin  // use blocking assignments to calculate nNDL6 and nPDL6 first.		
+			nNDL6 = ~(~PD0S6 | COMPLS6) | (COMPLS6 & ND0S6) | ~(ND0S6 | PD0S6 | ~r2);
+			nPDL6 = ~nNDL6;
+			COMPLS4 = (ND_1S4 & r1) | (~r1 & PD_1S4);
+			COMPLS6 = (ND_1S6 & r2) | (~r2 & PD_1S6);
+		end  // always
+		
 	always @ (posedge SBYTECLK)
 		r1 <= nNDL6;
 	
