@@ -24,11 +24,11 @@
 		 Also important is the "OR DOT" gate. I posted a question on a forum about this:
 		 https://www.eevblog.com/forum/projects/what-is-this-gate-in-this-8b10b-article/
 		 I found that this has to do with the ECL chips the authors used to realize their
-		 design. The logic function of OR DOT is true only when both inputs are equal, and 
-		 therefore has a truth table identical to an XNOR gate. */ 
+		 design. The logic function of OR DOT is just an OR gate. The DOT refers to 
+		 "emitter dotting," which is a technique used in ECL. */ 
 
 module encoder_8b10b(
-	input [7:0] i_data8b,		    // 8 bit data  
+	input [7:0] i_data8b,		// 8 bit data  
 	input K,                	// control input, ACTIVE HIGH for control, LOW for data
 	input SBYTECLK,         	// clock to update and register signals
 	output [9:0] o_data10b  // 10 bit output, "a" is MSB and "j" is LSB
@@ -82,14 +82,14 @@ module encoder_8b10b(
 	
 	// 5b function
 		// intermediate wires
-	assign n_A_nequal_B = ~(A ^ B);  // XNOR: see note at beginning of module
+	assign n_A_nequal_B = ~(A | B) | ~(~A | ~B);  // OR DOT has something to do with ECL, but is just OR
 	assign n_nA_a_nB = ~(~A & ~B);
 	assign n_A_a_B = ~(A & B);
-	assign n_C_nequal_D = ~(C ^ D);
+ 	assign n_C_nequal_D = ~(C | D) | ~(~C | ~D);
 	assign n_nC_a_nD = ~(~C & ~D);
 	assign n_C_a_D = ~(C & D);
 		// end intermediate wires
-		// output wires: "L" means logic function, Lxn = Logic function with "x" ones and "n" zeros (maintain disparity of +2, -2, or 0)
+		// output wires: "L" means logic function, Lxn = Logic function with "x" ones and "n" zeros 
 	assign L40 = ~(n_A_a_B | n_C_a_D);  // NOR: see note at beginning of module
 	assign L04 = ~(n_nA_a_nB | n_nC_a_nD);
 	assign L13 = ~(n_A_nequal_B | n_nC_a_nD) | ~(n_C_nequal_D | n_nA_a_nB);  // two NOR gate equivalents ORed
@@ -152,10 +152,10 @@ module encoder_8b10b(
 	// 5b/6b encoding
 		// intermediate wires (see line 58)
 	assign w7_2 = ~(L40 | ~B) | L04;
-	assign w7_3 = ~((L04 | C) ^ ~(~L13 | ~E | ~D));
+  	assign w7_3 = (L04 | C) | ~(~L13 | ~E | ~D);
 	assign w7_4 = ~(~D | L40);
-	assign w7_5 = ~(((~L13 | ~E | ~D) & E) ^ ~(~L13 | E));  
-	assign w7_6 = ~(~(E | ~L22) ^ ~(~L22 | ~K) ^ ~(~L04 | ~E) ^ ~(~E | ~L40) ^ ~(~E | ~L13 | D));  // Phew! Tough one haha
+  	assign w7_5 = ((~L13 | ~E | ~D) & E) | ~(~L13 | E);  
+  	assign w7_6 = ~(E | ~L22) | ~(~L22 | ~K) | ~(~L04 | ~E) | ~(~E | ~L40) | ~(~E | ~L13 | D);  // Phew! Tough one haha
 	assign L13_a_D_a_E = ~(~L13 | ~E | ~D);
 	assign XNOR7_1 = ~(A ^ COMPLS6);
 	assign XNOR7_2 = ~(w7_2 ^ COMPLS6);
