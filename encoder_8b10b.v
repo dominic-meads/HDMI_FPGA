@@ -65,23 +65,31 @@ module encoder_8b10b(
 	wire nF_a_nG_a_nH, nF_a_nG, F_a_G, F_nequal_G_a_K, F_nequal_G_a_nH, F_a_G_a_H;  // output wires of Fig. 4 from top to bottom
 	
 	// Disparity control datatypes
+		// output registers of Fig. 6 from top to bottom (I'm not sure what the dotted line PDL4 (fig. 6) represents
 	reg r1 = 0;  // clocked registers seen in Fig. 6. r1 is closest to top of page (MUST INITIALIZE TO 0 TO AVOID UNKOWN CONDITIONS)
 	reg r2 = 0;
-		// I turned these net few signals from wires to registers to combat unkown conditions upon initialization
-	reg nNDL6 = 0;  // output registers of Fig. 6 from top to bottom (I'm not sure what the dotted line PDL4 (fig. 6) represents
+	reg nNDL6 = 0;  
 	reg nPDL6 = 1;  // ~nNDL6 (fig. 6)
-	reg COMPLS4 = 0;
+	reg COMPLS4 = 0;  
 	reg COMPLS6 = 0;
-	wire PD_1S6, ND0S6, ND_1S6, PD0S6, ND_1S4, ND0S4, PD_1S4, PD0S4;  // output wires of Fig. 5 from top to bottom
+		 // outputs of Fig. 5 from top to bottom
+	reg PD_1S6 = 0; 
+	reg ND0S6 = 0;
+	reg ND_1S6 = 0;
+	reg PD0S6 = 0;
+	reg ND_1S4 = 0;
+	reg ND0S4 = 0;
+	reg PD_1S4 = 0;
+	reg PD0S4 = 0;  
 	   
 	
-	// 5b/6b encoding (7 = Fig. 7)
+	// 5b/6b encoding datatypes (7 = Fig. 7)
 	reg na,nb,nc,nd,ne,ni;  // complimented encoded outputs
 	wire w7_2,w7_3,w7_4,w7_5,w7_6;  /* These are intermediate wires that will be the inputs to the bottom 5 XOR ("E") gates. There are 6 XOR gates 
 									   in total in Fig. 7. XOR7_1 is at the top of Fig. 7, and XOR7_6 is the bottom (and last) XOR gate. The wires 
 									   correspond to the idential numbered XOR gate. e.g. w7_2 is an input (in addition to COMPLS6) to XOR7_2: the second 
 									   XOR gate from the top. */
-	wire L13_a_D_a_E;  // output wire
+	reg L13_a_D_a_E = 0;  // keep as reg for initialization
 	wire XNOR7_1,XNOR7_2,XNOR7_3,XNOR7_4,XNOR7_5,XNOR7_6;  // The inverted outputs of XOR gates (same order as above). Inject into FFs
 	
 	// 3b/4b encoding (8 = Fig. 8)
@@ -133,6 +141,25 @@ module encoder_8b10b(
 	// end 3b function
 	
 	
+	// Disparity control (Fig. 5 and 6 combined)
+	always @ (*)  // USE BLOCKING ASSIGNMENTS! ORDER MATTERS!
+		begin 
+			PD_1S6 = L13_a_D_a_E | ~(L22 | L31 | E);
+			ND0S6 = PD_1S6;
+			
+			
+
+
+
+
+
+
+
+
+
+
+
+	/*
 	// Disparity control 
 		// Fig. 5
 	assign PD_1S6 = L13_a_D_a_E | ~(L22 | L31 | E);
@@ -160,7 +187,7 @@ module encoder_8b10b(
 		r2 <= ~(~r1 | PD0S4 | ND0S4) | (ND0S4 & COMPLS4) | ~(COMPLS4 | ~PD0S4);
 		// end Fig. 6
 	// end Disparity control 
-
+	*/
 
 	// 5b/6b encoding
 		// intermediate wires (see line 58)
