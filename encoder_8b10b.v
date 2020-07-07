@@ -244,4 +244,4 @@ module encoder_8b10b(
 	// assign module outputs 
 	assign o_data10b[9:0] = ~{na,nb,nc,nd,ne,ni,nf,ng,nh,nj};
 
-endmodule  // encoder_8b10b
+endmodule  // encoder_8b10
