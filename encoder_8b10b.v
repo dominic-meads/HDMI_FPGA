@@ -10,7 +10,7 @@
 //                          https://opencores.org/websvn/filedetails?repname=1000base-x&path=%2F1000base-x%2Ftrunk%2Fdoc%2F01-581v1.pdf 
 //
 //	            FILENAME:   encoder_8b10b.v
-//	             VERSION:   1.0  6/12/2020
+//	             VERSION:   1.0  7/6/2020
 //                AUTHOR:   Dominic Meads
 //
 /////////////////////////////////////////////////////////////////////////////////////////
