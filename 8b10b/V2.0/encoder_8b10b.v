@@ -62,4 +62,12 @@ module encoder_8b10b(
 	assign L31 = (line_sum == 3) ? 1:0;  // 3 ones and 1 zero
 	assign L22 = (line_sum == 2) ? 1:0;  // 2 ones and 2 zeros
 	
-endmodule 
+	// 5b/6b ecnoding (fig. 7) -- statments simplified using DeMorgan's thm and basic boolean algebra
+	assign a = A ^ COMPLS6;
+	assign b = ((~L40 & B) | L04) ^ COMPLS6;
+	assign c = ((L13 & D & E) | (L04 | C)) ^ COMPLS6;
+	assign d = (D & ~L40) ^ COMPLS6;
+	assign e = ((L13 & ~E) | (E & (~L13 | ~E | ~D))) ^ COMPLS6;
+	assign i = ((~E & L22) | (L22 & K) | (L04 & E) | (E & L40) | (E & L13 & ~D)) ^ COMPLS6;
+	
+endmodule  
