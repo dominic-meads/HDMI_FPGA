@@ -14,6 +14,7 @@ module HDMI_test(
 // clk divider 125 MHz to 25 MHz pixclk, and multiplier 125 MHz to 250 MHz
 wire MMCM_pix_clock, pixclk;
 wire clk_TMDS, DCM_TMDS_CLKFX;
+wire clkfb_in, clkfb_out;
 
    // MMCME2_BASE: Base Mixed Mode Clock Manager
    //              Artix-7
@@ -67,7 +68,7 @@ wire clk_TMDS, DCM_TMDS_CLKFX;
       .CLKOUT5(CLKOUT5),     // 1-bit output: CLKOUT5
       .CLKOUT6(CLKOUT6),     // 1-bit output: CLKOUT6
       // Feedback Clocks: 1-bit (each) output: Clock feedback ports
-      .CLKFBOUT(CLKFBOUT),   // 1-bit output: Feedback clock
+      .CLKFBOUT(clkfb_in),   // 1-bit output: Feedback clock
       .CLKFBOUTB(CLKFBOUTB), // 1-bit output: Inverted CLKFBOUT
       // Status Ports: 1-bit (each) output: MMCM status ports
       .LOCKED(LOCKED),       // 1-bit output: LOCK
@@ -77,7 +78,7 @@ wire clk_TMDS, DCM_TMDS_CLKFX;
       .PWRDWN(PWRDWN),       // 1-bit input: Power-down
       .RST(1'b0),             // 1-bit input: Reset
       // Feedback Clocks: 1-bit (each) input: Clock feedback ports
-      .CLKFBIN(CLKFBIN)      // 1-bit input: Feedback clock
+      .CLKFBIN(clkfb_out)      // 1-bit input: Feedback clock
    );
 
    // End of MMCME2_BASE_inst instantiation
@@ -100,6 +101,17 @@ wire clk_TMDS, DCM_TMDS_CLKFX;
       .O(clk_TMDS), // 1-bit output: Clock output
       .I(DCM_TMDS_CLKFX)  // 1-bit input: Clock input
    );
+   
+   // BUFG: Global Clock Simple Buffer
+   //       Artix-7
+   // Xilinx HDL Language Template, version 2020.1
+
+   BUFG BUFG_CLKFB (
+      .O(clkfb_out), // 1-bit output: Clock output
+      .I(clkfb_in)  // 1-bit input: Clock input
+   );
+
+   // End of BUFG_inst instantiation
 // end clk divider to 25 MHz pixclk
 
 ////////////////////////////////////////////////////////////////////////
@@ -229,3 +241,4 @@ always @(posedge clk_TMDS)
 // end serializer and output buffers
 
 endmodule  // HDMI_test
+
