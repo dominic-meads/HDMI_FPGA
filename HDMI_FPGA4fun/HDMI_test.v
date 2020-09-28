@@ -116,24 +116,19 @@ wire clkfb_in, clkfb_out;
 
 ////////////////////////////////////////////////////////////////////////
 // counter and sync generation
-reg [9:0] CounterX, CounterY;
+reg [9:0] CounterX = 0, CounterY = 0;
 reg hSync, vSync, DrawArea;
 
-always @(posedge pixclk) 
-    DrawArea <= (CounterX<640) && (CounterY<480);       // define picture dimensions for 640x480 (off-screen data 800x525)
-
-always @(posedge pixclk) 
-    CounterX <= (CounterX==799) ? 0 : CounterX+1;       // horizontal counter (including off-screen horizontal 160 pixels) total of 800 pixels 
-    
-always @(posedge pixclk) 
-    if(CounterX==799) 
-        CounterY <= (CounterY==524) ? 0 : CounterY+1;   /* vertical counter (including off-screen vertical 45 pixels) total of 525 pixels
-                                                           only counts up 1 count after horizontal finishes. */
-always @(posedge pixclk) 
-    hSync <= (CounterX>=656) && (CounterX<752);         // hsync high for 96 counts  
-    
-always @(posedge pixclk) 
-    vSync <= (CounterY>=490) && (CounterY<492);         // vsync high for 2 counts
+always @(posedge pixclk)
+    begin  
+        DrawArea <= (CounterX<640) && (CounterY<480);           // define picture dimensions for 640x480 (off-screen data 800x525)
+        CounterX <= (CounterX==799) ? 0 : CounterX+1;           // horizontal counter (including off-screen horizontal 160 pixels) total of 800 pixels 
+        if(CounterX==799) 
+            CounterY <= (CounterY==524) ? 0 : CounterY+1;       /* vertical counter (including off-screen vertical 45 pixels) total of 525 pixels
+                                                                   only counts up 1 count after horizontal finishes. */                                                          
+        hSync <= (CounterX>=656) && (CounterX<752);         // hsync high for 96 counts                                                 
+        vSync <= (CounterY>=490) && (CounterY<492);         // vsync high for 2 counts
+    end
 // end counter and sync generation  
 
 ///////////////////////////////////////////////////////////////////////
